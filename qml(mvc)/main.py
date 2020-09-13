@@ -51,15 +51,26 @@ class MyStringListModel(QAbstractListModel):
   
   def setData(self, modelIndex, value, role=Qt.DisplayRole):
     row = modelIndex.row()
-    while row >= len(self.__data): 
+    if row > len(self.__data) or row < 0:
+      return False
+    if row == len(self.__data):
       self.__data.append({})
-    self.__data[row][role] = value
+
+    if isinstance(value, str):
+      self.__data[row]["text"] = value
+    else:
+      self.__data[row] = value
+      
+    print(self.__data)
+    return True
+
   
   def data(self, modelIndex, role=Qt.DisplayRole):
     value = None
+    d = self.roleNames()
     try:
       row = modelIndex.row()
-      value = self.__data[row][role]
+      value = self.__data[row][d[role]]
     finally:
       return value
   
@@ -67,19 +78,20 @@ class MyStringListModel(QAbstractListModel):
     return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
     
   def roleNames(self):
-    d = {}
-    s = set()
-    for obj in self.__data:
-      s.add(obj.keys())
-    for i in s:
-      d[i]: ...
+    d = {v: k for k, v in Roles.items()}
     return d
   
   def setList(self, lst):
+    self.__data.clear()
     for i, obj in enumerate(lst):
       modelIndex = self.createIndex(i, 0)
-      for j in list(obj.keys()):
-        self.setData(modelIndex, obj[j], Roles[j])
+      self.setData(modelIndex, obj)
+
+
+    # for i, obj in enumerate(lst):
+    #   modelIndex = self.createIndex(i, 0)
+    #   for j in list(obj.keys()):
+    #     self.setData(modelIndex, obj[j], Roles[j])
 
 
 lst = [
