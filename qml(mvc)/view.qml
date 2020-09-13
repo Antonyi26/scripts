@@ -1,52 +1,47 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 
 Window {
-  visible: true
-  width: 640
-  height: 480
+    visible: true
+    width: 640
+    height: 480
     //color: "tomato"
 
-  Rectangle {
-    anchors.centerIn: parent
-    height: 100
-    width: parent.width / 2
-    border {
-      width: 1
-      color: "black"
-    }
+    ColumnLayout {
+        anchors.fill: parent
 
-    Component.onCompleted: {
-      //console.log(view.contentHeight);
-      //console.log(view.contentWidth);
-      height = view.contentHeight;
-      //width = view.contentWidth;
-    }
+        Item {
+            height: 100
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
 
-    ListView {
-      id: view
-      anchors.fill: parent
-      spacing: 2
-      clip: true
-      model: myModel
+            ListView {
+                id: view
+                anchors.fill: parent
+                spacing: 2
+                clip: true
+                orientation: ListView.Horizontal
+                model: myModel
 
-      delegate:
-        Rectangle {
-          height: 50
-          width: view.width
-          color: model.color
-          radius: model.borderRadius
+                delegate: Rectangle {
+                    height: 50
+                    width: 100
+                    color: model.color
+                    radius: 10
+                    border.color: "black"
+                    border.width: 1
 
-          Text {
-            anchors.centerIn: parent
-            text: model.text
-          }
+                    TextInput {
+                        anchors.centerIn: parent
+                        text: model.text
+                        onAccepted: {
+                            model.text = text
+                        }
+                    }
+                }
+            }
         }
     }
-  }
-
-// Text {
-//     anchors.centerIn: parent
-//     text: "Hello World"
-// }
 }
