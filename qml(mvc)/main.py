@@ -23,37 +23,20 @@
 
 from sys import exit
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
-from PyQt5.QtGui import QGuiApplication, QColor
-from PyQt5.QtQml import QQmlApplicationEngine
+# from PyQt5.QtGui import QGuiApplication
+# from PyQt5.QtQml import QQmlApplicationEngine
+from PyQt5.QtWidgets import QApplication, QWidget, QListView, QVBoxLayout, QComboBox
 
-QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-
-app = QGuiApplication([])
-
-# class obj:
-#   def __init__(self, color, text):
-#     self.color = QColor(color)
-#     self.text = text
-
-# lst = [
-#   obj("red", "one"),
-#   obj("green", "two"),
-#   obj("lightblue", "three")
-# ]
-
-# model.setStringList(lst)
+# QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+# app = QGuiApplication([])
+app = QApplication([])
 
 Roles = {
-  "text": 256,
-  "color": 257
+  # "text": 256,
+  "text": Qt.DisplayRole,
+  "color": 257,
+  "borderRadius": 258
 }
-
-
-defaultElement = {
-  Roles["text"]: "undefined",
-  Roles["color"]: "gray"
-}
-
 
 class MyStringListModel(QAbstractListModel):
   def __init__(self, data=[], parent=None):
@@ -69,7 +52,7 @@ class MyStringListModel(QAbstractListModel):
   def setData(self, modelIndex, value, role=Qt.DisplayRole):
     row = modelIndex.row()
     while row >= len(self.__data): 
-      self.__data.append(defaultElement.copy())
+      self.__data.append({})
     self.__data[row][role] = value
   
   def data(self, modelIndex, role=Qt.DisplayRole):
@@ -79,69 +62,57 @@ class MyStringListModel(QAbstractListModel):
       value = self.__data[row][role]
     finally:
       return value
-
+  
   def flags(self, modelIndex):
-    return Qt.ItemIsSelectable
+    return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
     
   def roleNames(self):
     d = {}
-    for i in Roles.keys():
-      d[Roles[i]] = i.encode('utf-8')
+    s = set()
+    for obj in self.__data:
+      s.add(obj.keys())
+    for i in s:
+      d[i]: ...
     return d
   
-  # def index(self, row, column, modelIndex=QModelIndex()):
-  #   pass
-  
-  # def parent(self, modelIndex):
-  #   return QModelIndex()
+  def setList(self, lst):
+    for i, obj in enumerate(lst):
+      modelIndex = self.createIndex(i, 0)
+      for j in list(obj.keys()):
+        self.setData(modelIndex, obj[j], Roles[j])
+
+
+lst = [
+  {"text": "one", "color": "tomato", "borderRadius": 20},
+  {"text": "two", "color": "lightblue", "borderRadius": 8}
+]
 
 model = MyStringListModel()
-modelIndex = model.createIndex(0, 0)
-model.setData(modelIndex, "one", Roles["text"])
-model.setData(modelIndex, "tomato", Roles["color"])
-modelIndex = model.createIndex(2, 0)
-model.setData(modelIndex, "two", Roles["text"])
-model.setData(modelIndex, "lightblue", Roles["color"])
+model.setList(lst)
 
-engine = QQmlApplicationEngine()
-engine.rootContext().setContextProperty("myModel", model)
-engine.load("view.qml")
-if len(engine.rootObjects()) == 0:
-  print("Error. No root objects")
-  exit()
+# engine = QQmlApplicationEngine()
+# engine.rootContext().setContextProperty("myModel", model)
+# engine.load("view.qml")
+# if len(engine.rootObjects()) == 0:
+#   print("Error. No root objects")
+#   exit()
+
+w = QWidget()
+w.setWindowTitle("Hello World !!!")
+w.resize(320, 240)
+
+view = QListView()
+view.setModel(model)
+
+comboBox = QComboBox()
+comboBox.setModel(model)
+
+layout = QVBoxLayout()
+layout.addWidget(comboBox)
+layout.addWidget(view)
+
+w.setLayout(layout)
+
+w.show()
 
 app.exec()
-
-#################################################
-
-# from PyQt5.QtCore import QApplication
-# from PyQt5.QtWidgets import QWidget, QListView, QVBoxLayout, QComboBox
-# from PyQt5.QtCore import QStringListModel
-
-# app = QApplication([])
-
-# w = QWidget()
-# w.setWindowTitle("Hello World !!!")
-# w.resize(320, 240)
-
-# model = QStringListModel()
-# strings = ["one", "two", "three"]
-# model.setStringList(strings)
-
-# view = QListView()
-# view.setModel(model)
-
-# comboBox = QComboBox()
-# comboBox.setModel(model)
-
-# layout = QVBoxLayout()
-# layout.addWidget(comboBox)
-# layout.addWidget(view)
-
-# w.setLayout(layout)
-
-# w.show()
-
-# app.exec_()
-
-#################################################

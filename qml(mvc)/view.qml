@@ -10,15 +10,15 @@ Window {
   Rectangle {
     anchors.centerIn: parent
     height: 100
-    width: parent.width
+    width: parent.width / 2
     border {
       width: 1
       color: "black"
     }
 
     Component.onCompleted: {
-      console.log(view.contentHeight);
-      console.log(view.contentWidth);
+      //console.log(view.contentHeight);
+      //console.log(view.contentWidth);
       height = view.contentHeight;
       //width = view.contentWidth;
     }
@@ -30,16 +30,18 @@ Window {
       clip: true
       model: myModel
 
-      delegate: Rectangle {
-        height: 50
-        width: view.width
-        color: model.color
+      delegate:
+        Rectangle {
+          height: 50
+          width: view.width
+          color: model.color
+          radius: model.borderRadius
 
-        Text {
-          anchors.centerIn: parent
-          text: model.text
+          Text {
+            anchors.centerIn: parent
+            text: model.text
+          }
         }
-      }
     }
   }
 
