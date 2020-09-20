@@ -1,3 +1,3 @@
 {
-    "files": ["main.py", "view.qml"]
+    "files": ["view.qml","TableModel.py","main.py","MyScene.py","TableData.py"]
 }
