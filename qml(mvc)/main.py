@@ -21,110 +21,58 @@
 
 #################################################
 
-from sys import exit
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
-# from PyQt5.QtGui import QGuiApplication
-# from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication, QWidget, QListView, QVBoxLayout, QComboBox
+import sys, os
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtWidgets import (
+  QApplication,
+  QWidget,
+  QGraphicsScene,
+  QGraphicsView,
+  QGraphicsItem,
+  QHBoxLayout,
+  QVBoxLayout
+)
+from PyQt5.QtQuickWidgets import QQuickWidget
+# from PyQt5.QtGui import QGuiApplication, QColor
+from PyQt5.QtQml import QQmlApplicationEngine
+import MyScene as ms
+# from TableModel import *
+# from TableData import *
 
-# QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-# app = QGuiApplication([])
-app = QApplication([])
+if __name__ == "__main__":
+  os.chdir( os.path.dirname(os.path.abspath(__file__)) )
 
-Roles = {
-  # "text": 256,
-  "text": Qt.DisplayRole,
-  "color": 257,
-  "borderRadius": 258
-}
+  #QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+  #app = QGuiApplication([])
+  app = QApplication([])
 
-class MyStringListModel(QAbstractListModel):
-  def __init__(self, data=[], parent=None):
-    QAbstractListModel.__init__(self, parent)
-    self.__data = data
-    
-  def rowCount(self, modelIndex=QModelIndex()):
-    return len(self.__data)
-  
-  def columnCount(self, modelIndex=QModelIndex()):
-    return 1
-  
-  def setData(self, modelIndex, value, role=Qt.DisplayRole):
-    row = modelIndex.row()
-    if row > len(self.__data) or row < 0:
-      return False
-    if row == len(self.__data):
-      self.__data.append({})
+#  engine = QQmlApplicationEngine()
+#  engine.rootContext().setContextProperty("myModel", model)
+#  engine.load("view.qml")
 
-    if isinstance(value, str):
-      self.__data[row]["text"] = value
-    else:
-      self.__data[row] = value
-      
-    print(self.__data)
-    return True
-
-  
-  def data(self, modelIndex, role=Qt.DisplayRole):
-    value = None
-    d = self.roleNames()
-    try:
-      row = modelIndex.row()
-      value = self.__data[row][d[role]]
-    finally:
-      return value
-  
-  def flags(self, modelIndex):
-    return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
-    
-  def roleNames(self):
-    d = {v: k for k, v in Roles.items()}
-    return d
-  
-  def setList(self, lst):
-    self.__data.clear()
-    for i, obj in enumerate(lst):
-      modelIndex = self.createIndex(i, 0)
-      self.setData(modelIndex, obj)
-
-
-    # for i, obj in enumerate(lst):
-    #   modelIndex = self.createIndex(i, 0)
-    #   for j in list(obj.keys()):
-    #     self.setData(modelIndex, obj[j], Roles[j])
-
-
-lst = [
-  {"text": "one", "color": "tomato", "borderRadius": 20},
-  {"text": "two", "color": "lightblue", "borderRadius": 8}
-]
-
-model = MyStringListModel()
-model.setList(lst)
-
-# engine = QQmlApplicationEngine()
-# engine.rootContext().setContextProperty("myModel", model)
-# engine.load("view.qml")
-# if len(engine.rootObjects()) == 0:
+#  if len(engine.rootObjects()) == 0:
 #   print("Error. No root objects")
-#   exit()
+#   sys.exit()
 
-w = QWidget()
-w.setWindowTitle("Hello World !!!")
-w.resize(320, 240)
+  sceneWidget = ms.MySceneWidget()
+  sceneItemsModel = ms.MySceneListModel(sceneWidget.items())
+  sceneWidget.itemListChanged.connect(sceneItemsModel.updateModel)
 
-view = QListView()
-view.setModel(model)
 
-comboBox = QComboBox()
-comboBox.setModel(model)
+  qmlWidget = QQuickWidget()
+  qmlWidget.rootContext().setContextProperty("mySceneWidget", sceneWidget)
+  qmlWidget.rootContext().setContextProperty("mySceneModel", sceneItemsModel)
+  qmlWidget.setSource(QUrl("view.qml"))
+  qmlWidget.setResizeMode(QQuickWidget.SizeRootObjectToView);
 
-layout = QVBoxLayout()
-layout.addWidget(comboBox)
-layout.addWidget(view)
+  layout = QHBoxLayout()
+  layout.addWidget(sceneWidget)
+  layout.addWidget(qmlWidget)
 
-w.setLayout(layout)
+  w = QWidget()
+  w.setWindowTitle("Hello World !!!")
+  w.resize(640, 480)
+  w.setLayout(layout)
+  w.show()
 
-w.show()
-
-app.exec()
+  app.exec_()
